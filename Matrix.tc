@@ -1,0 +1,206 @@
+
+#define MATRIX MANGLE()
+
+MATRIX* MANGLE(_alloc)(Index nrows,Index ncols){
+	MATRIX* out = NULL;
+
+	if(nrows > 0 && ncols > 0){
+		out =  malloc( sizeof(MATRIX) );
+		if(!out){
+			fprintf(stderr,"Failed to allocate matrix object\n");
+		}
+		else{
+			out->nrows=nrows;
+			out->ncols=ncols;
+			out->data =  malloc(nrows*ncols*sizeof(TYPE));
+			if( !(out->data) ){
+				fprintf(stderr,"Warning, failure to allocate data to matrix\n");
+			}
+		}
+	}
+	else{
+		fprintf(stderr, "Warning: Initialized matrix with zero rows or columns\n");
+	}
+
+	return out;
+}
+
+int MANGLE(_free)(MATRIX* in){
+	int out=1;
+
+
+	assert(in!=NULL);
+	assert(in->data!=NULL);
+
+
+	if(in != NULL && in->data != NULL){
+		free(in->data);
+		free(in);
+		out=0;
+	}
+	else if ( NULL == in ){
+		fprintf(stderr,"Warning: Attempt to free already free'd matrix.\n");
+		out=1;
+	}
+	else if( NULL == in->data && NULL != in ){
+		/*This should never happen..*/
+		assert(0);
+		fprintf(stderr,"Error: Allocated matrix with no data.\n");
+		out=1;
+	}
+
+	return out;
+}
+
+
+
+
+int MANGLE(_bin_write)(MATRIX* in, const char* filename){
+	FILE* fp;
+	fp=fopen(filename,"wb");
+	if(!fp){
+
+		fprintf(stderr,"Unable to open file for writing.\n");
+		exit(EXIT_FAILURE);
+
+	}
+	else{
+
+		/*First write matrix dimensions.*/
+		size_t written;
+		written=fwrite(&(in->nrows),sizeof(Index),1,fp);
+
+		if( 1 != written ){
+			fprintf(stderr,"Error: In Mat_bin_write: Unable to write number of rows to file.\n");
+			fclose(fp);
+			return EXIT_FAILURE;
+		}
+
+		written=fwrite(&(in->ncols),sizeof(Index),1,fp);
+
+		if( 1 != written ){
+			fprintf(stderr,"Error: In Mat_bin_write: Unable to write number of columns to file.\n");
+			fclose(fp);
+			return EXIT_FAILURE;
+		}
+
+
+
+		/*Now write matrix data.*/
+		written = fwrite(in->data,sizeof(TYPE),in->nrows*in->ncols,fp);
+		if( in->nrows * in->ncols != written ){
+			fprintf(stderr, "Error: In Mat_bin_write: Unable to write data to file.\n");
+			fprintf(stderr, "Requested write size: %lu\n",in->nrows*in->ncols);
+			fprintf(stderr, "Amount written: %lu\n",written);
+			fprintf(stderr, "Difference: %lu", in->nrows*in->ncols - written);
+			fclose(fp);
+			return EXIT_FAILURE;
+		}
+	}
+
+	fclose(fp);
+
+	return EXIT_SUCCESS;
+
+}
+
+
+MATRIX* MANGLE(_bin_read)(const char* filename){
+	FILE* fp;
+	MATRIX* out = malloc(sizeof(MATRIX));
+
+	fp=fopen(filename,"rb");
+	if(!fp){
+
+		fprintf(stderr,"Unable to open file for reading.\n");
+		return NULL;
+
+
+	}
+	else{
+
+		/*First read in matrix dimensions.*/
+		size_t read_in = 0;
+		read_in = fread(&(out->nrows),sizeof(Index),1,fp);
+		if(1 != read_in){
+			fprintf(stderr,"Error: Failed to read in number of rows\n");
+			fclose(fp);
+			return NULL;
+		}
+
+		read_in = fread(&(out->ncols),sizeof(Index),1,fp);
+		if(1 != read_in){
+			fprintf(stderr,"Error: Failed to read in number of columns\n");
+			fclose(fp);
+			return NULL;
+		}
+		
+		/*Allocate matrix.*/
+		out->data = malloc( out->nrows*out->ncols*sizeof(TYPE) );
+
+		assert(out->data!=NULL);
+
+		/*Now read matrix data.*/
+		read_in = fread(out->data,sizeof(TYPE),out->nrows*out->ncols,fp);
+		if( out->nrows * out->ncols != read_in ){
+			fprintf(stderr, "Error: In Mat_bin_write: Unable to write data to file.\n");
+			fprintf(stderr, "Requested write size: %lu\n",out->nrows*out->ncols);
+			fprintf(stderr, "Amount written: %lu\n",read_in);
+			fprintf(stderr, "Difference: %lu\n", out->nrows*out->ncols - read_in);
+			fclose(fp);
+			return NULL;
+		}
+
+	}
+
+	fclose(fp);
+
+	assert( NULL != out);
+	assert( NULL != out->data);
+	assert( 0    != out->nrows);
+	assert( 0    != out->ncols);
+	return out;
+
+}
+
+
+inline void MANGLE(_set)(MATRIX* in,Index r,Index c,TYPE val){
+	assert(r<=in->nrows);
+	assert(c<=in->ncols);
+	assert(r>0);
+	assert(c>0);
+	r=r-1;
+	c=c-1;
+	in->data[c*in->nrows+r] = val;
+}
+
+
+inline TYPE MANGLE(_get)(MATRIX* in,Index r,Index c){
+	assert(r<=in->nrows);
+	assert(c<=in->ncols);
+	assert(r>0);
+	assert(c>0);
+	r=r-1;
+	c=c-1;
+	return in->data[c*in->nrows+r];
+}
+
+void MANGLE(_print)(MATRIX* in){
+	Index i,j;
+	for(i=1;i<=in->nrows;i++){
+		for(j=1;j<=in->ncols;j++){
+			TYPE val = MANGLE(_get)(in,i,j);
+#if TYPE == Complex
+			printf("%f+i%f ",creal(val),cimag(val));
+#elif TYPE == Index
+			printf("%d ",val);
+#else
+			printf("%f ",val);
+#endif
+		}
+		printf("\n");
+	}
+}
+
+
+#undef MATRIX

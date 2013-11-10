@@ -1,0 +1,6 @@
+This is a type generic dense matrix library that is compatible with the C11 standard.
+The compile time generics are achieved through minimal inclusion of C preprocessor
+directives and the new C11 _Generic keyword for "overloaded" functions.
+
+This is a work in progress and is updated as my needs require. There will be soon
+a type generic interface to BLAS and LAPACK routines.

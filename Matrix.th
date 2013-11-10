@@ -1,0 +1,48 @@
+
+#define MATRIX MANGLE()
+/**
+ *A generic matrix struct of type #defined'd TYPE. Functions prepended with #defined'd MANGLE.
+ */
+typedef struct{
+	Index nrows;
+	Index ncols;
+	TYPE* data;
+}MATRIX; 
+
+
+/**
+ * Allocate matrix.
+ */
+MATRIX* MANGLE(_alloc)(Index nrows, Index ncols);
+
+/**
+ * Free matrix.
+ */
+int MANGLE(_free)(MATRIX* in);
+
+/**
+ *Write matrix to binary file.
+ */
+int MANGLE(_bin_write)(MATRIX* in, const char* filename);
+
+/**
+ *Read from binary file.
+ */
+MATRIX* MANGLE(_bin_read)(const char* filename);
+
+/**
+ *Set matrix entry.
+ */
+void MANGLE(_set)(MATRIX* in, Index r, Index c, TYPE val);
+
+/**
+ *Get matrix entry.
+ */
+TYPE MANGLE(_get)(MATRIX* in,Index r,Index c);
+
+/**
+ *Print matrix to stdout.
+ */
+void MANGLE(_print)(MATRIX* in);
+
+#undef MATRIX
