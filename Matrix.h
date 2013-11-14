@@ -1,7 +1,9 @@
 #ifndef MATRIX_H_
 #define MATRIX_H_
 
-#include "MyTypes.h"
+typedef double Real;
+typedef unsigned long Index;
+typedef double _Complex Complex;
 
 /********************************/
 /*                              */

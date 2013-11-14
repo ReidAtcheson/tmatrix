@@ -3,9 +3,6 @@
 #include <assert.h>
 #include <complex.h>
 #include "Matrix.h"
-
-#include "MyTypes.h"
-
 /**
  *Real matrix methods.
  */

@@ -6,11 +6,9 @@ MATRIX_SRC = Matrix.c \
 
 OBJECTS = Matrix.o
 
-export CC
-export LD
-export CFLAGS
-export LDFLAGS
- 
+CC := clang
+CFLAGS := -c -g -Wall
+
 all: $(OBJECTS)
 	 
 Matrix.o: $(MATRIX_SRC)
